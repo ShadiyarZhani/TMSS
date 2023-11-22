@@ -1,0 +1,68 @@
+package mypackage;
+
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Random;
+
+public class RequestProcessingSystem {
+
+    public static double[] generateRequests(double lambda, int numRequests) {
+        double[] requests = new double[numRequests];
+        Random random = new Random();
+
+        for (int i = 0; i < numRequests; i++) {
+            requests[i] = (-1 / lambda) * Math.log(random.nextDouble() * 0.01 + 0.01);
+        }
+
+        return requests;
+    }
+
+    public static double[] processTime(int numPosts, double processingInterval) {
+        double[] processTimes = new double[numPosts];
+        Random random = new Random();
+
+        for (int i = 0; i < numPosts; i++) {
+            processTimes[i] = random.nextDouble() * processingInterval;
+        }
+
+        return processTimes;
+    }
+
+    public static double[] simulateSystem(int numRequests, double lambda, int numPosts, double processingInterval) {
+        double[] requestTimes = generateRequests(lambda, numRequests);
+        double[] processTimes = processTime(numPosts, processingInterval);
+
+        Queue<Double> queue = new LinkedList<>();
+        double totalTime = 0;
+
+        for (int i = 0; i < numRequests; i++) {
+            double arrivalTime = requestTimes[i];
+            double processingTime = processTimes[i % numPosts];
+
+            if (!queue.isEmpty()) {
+                totalTime += queue.size() * processingTime;
+            }
+
+            totalTime += processingTime;
+            queue.add(arrivalTime + processingTime);
+        }
+
+        double averageTime = totalTime / numRequests;
+        double maxQueueLength = queue.size();
+
+        return new double[]{averageTime, maxQueueLength};
+    }
+
+    public static void main(String[] args) {
+        double lambda = 0.1; // средняя интенсивность запросов
+        int numPosts = 2; // количество постов обслуживания
+        double processingInterval = 1; // интервал времени обработки каждым постом
+
+        int numRequests = 1000;
+
+        double[] results = simulateSystem(numRequests, lambda, numPosts, processingInterval);
+
+        System.out.println("Среднее время пребывания заявок в системе: " + results[0]);
+        System.out.println("Максимальная длина очереди: " + results[1]);
+    }
+}
